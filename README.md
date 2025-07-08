@@ -15,7 +15,7 @@
 〇実行方法
 1．Python 3.11以上をインストール
 2.ライブラリのインストール
-　pip install pygame
+　 pip install pygame
 3.main.pyを実行
 
 〇使用技術
