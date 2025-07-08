@@ -8,7 +8,8 @@ from entities.laser import Laser
 from entities.enemies import Mizuaka, Abura, Sabi, Kabi
 from entities.effects import Explosion
 from ui.render_text import render_text, render_text_center
-from ui import draw_bg, draw_gauge
+from ui.draw_bg import draw_bg
+from ui.draw_gauge import draw_gauge
 from core.gamemanager import GameManager
 from core.gamestate import GameState
 from core.save_load import load_game, delete_save
@@ -42,6 +43,7 @@ def main():
 
     clock = pygame.time.Clock()
     gm = GameManager()
+    gm.font = font
     current_bgm = None
 
     # BGM再生関数: 変更があった場合のみ切り替え
