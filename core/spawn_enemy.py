@@ -15,50 +15,71 @@ from entities.enemies import (
 
 @dataclass
 class SpawnContext:
-    enemy_type: str
-    x_pos: int
-    y_pos: int
-    IMG: Dict[str, pygame.Surface]
-    all_sprites: pygame.sprite.Group
-    enemies: pygame.sprite.Group
-    gm: Any
-    fragment_group: pygame.sprite.Group
-    fragment_image: pygame.Surface
-    extra_groups: Optional[Dict[str, pygame.sprite.Group]] = None
-    player: Optional[Any] = None
-    speed: Optional[float] = None
-    x_speed_factor: Optional[float] = None
-    enemy_data: Optional[Dict[str, Any]] = None
-    bullet_group: Optional[pygame.sprite.Group] = None
+    """
+    敵出現時のコンテキスト情報を格納するデータクラス。
+    各ファクトリ関数に必要なパラメータをまとめて管理する。
+    """
+    enemy_type: str                          #敵の種類を示す文字列
+    x_pos: int                               #出現X座標
+    y_pos: int                               #出現Y座標
+    IMG: Dict[str, pygame.Surface]           #画像辞書
+    all_sprites: pygame.sprite.Group         #全スプライトグループ
+    enemies: pygame.sprite.Group             #敵グループ
+    gm: Any                                  #GameManagerインスタンス
+    fragment_group: pygame.sprite.Group      #破片スプライトグループ
+    fragment_image: pygame.Surface           #破片画像
+    extra_groups: Optional[Dict[str, pygame.sprite.Group]] = None #追加グループ
+    player: Optional[Any] = None             #プレイヤーインスタンス
+    speed: Optional[float] = None            #敵移動速度
+    x_speed_factor: Optional[float] = None   #移動速度X方向係数
+    enemy_data: Optional[Dict[str, Any]] = None  #カスタム設定
+    bullet_group: Optional[pygame.sprite.Group] = None #弾グループ
 
 
 def _common_setup(inst: pygame.sprite.Sprite, ctx: SpawnContext) -> None:
+    """
+    敵インスタンス共通の初期化処理。
+    - 位置設定
+    - speed属性設定
+    - 破片用プロパティ設定
+    - GameManager参照設定
+    - スプライト&敵グループへの追加
+    - メンバーを持つ敵タイプの場合、メンバーにも同様の設定を適用
+    """
+    # 位置設定
     if hasattr(inst, 'rect'):
         inst.rect.x = ctx.x_pos
         inst.rect.y = ctx.y_pos
+    # 速度設定
     if ctx.speed is not None and hasattr(inst, 'speed'):
         inst.speed = ctx.speed
+    # 破片用プロパティ 
     inst.fragment_group = ctx.fragment_group
     inst.fragment_image = ctx.fragment_image
     inst.gm = ctx.gm
+    #グループ追加
     ctx.all_sprites.add(inst)
     ctx.enemies.add(inst)
+    # メンバーがいる場合、メンバーにも設定適用
     if hasattr(inst, 'members'):
         for member in inst.members:
             member.fragment_group = ctx.fragment_group
             member.fragment_image = ctx.fragment_image
             member.gm = ctx.gm
-
+#ファクトリ数の型定義
 Factory = Callable[[SpawnContext], Union[pygame.sprite.Sprite, List[pygame.sprite.Sprite]]]
 ENEMY_FACTORY: Dict[str, Factory] = {}
 
 def register(name: str) -> Callable[[Factory], Factory]:
+    """
+    敵種別名をキーにファクトリ関数を登録するデコレータ
+    """
     def decorator(func: Factory) -> Factory:
         ENEMY_FACTORY[name] = func
         return func
     return decorator
 
-# Mizuaka
+# Mizuaka系
 @register("Mizuaka")
 def _create_mizuaka(ctx: SpawnContext):
     return Mizuaka(ctx.IMG["mizuaka"])
